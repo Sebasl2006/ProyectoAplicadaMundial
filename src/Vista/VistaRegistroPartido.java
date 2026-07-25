@@ -1,20 +1,26 @@
 package Vista;
 
+import com.toedter.calendar.JDateChooser;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SpinnerDateModel;
 import javax.swing.border.LineBorder;
+import javax.swing.table.DefaultTableModel;
 
-public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFrame
+public class VistaRegistroPartido extends JPanel {
 
     private final Color AZUL_FONDO = new Color(6, 26, 64);
     private final Color AZUL_PANEL = new Color(15, 45, 90);
@@ -25,34 +31,45 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
     private JPanel panelFormulario;
     private JPanel panelBotones;
 
-    private JLabel lblTitulo, lblCodigo, lblFecha, lblHora, lblEquipoA, lblEquipoB, lblLista;
+    private JLabel lblTitulo;
+    private JLabel lblCodigo;
+    private JLabel lblFecha;
+    private JLabel lblHora;
+    private JLabel lblEquipoA;
+    private JLabel lblEquipoB;
+    private JLabel lblLista;
 
-    private JTextField txtCodigo, txtFecha, txtHora;
-    private JComboBox<String> cmbEquipoA, cmbEquipoB;
-    private JButton btnGuardar, btnLimpiar, btnVolver;
+    private JTextField txtCodigo;
+    private JDateChooser dateChooserFecha;
+    private JSpinner spnHora;
+
+    private JComboBox<String> cmbEquipoA;
+    private JComboBox<String> cmbEquipoB;
+
+    private JButton btnGuardar;
+    private JButton btnLimpiar;
+    private JButton btnVolver;
 
     private JTable tablaPartidos;
     private JScrollPane scrollTabla;
-    private javax.swing.table.DefaultTableModel modeloTabla;
+    private DefaultTableModel modeloTabla;
 
     public VistaRegistroPartido() {
         setLayout(null);
-        setPreferredSize(new java.awt.Dimension(1100, 700)); // mismo tamaño que tenía el JFrame
+        setPreferredSize(new java.awt.Dimension(1100, 760));
         setBackground(AZUL_FONDO);
         iniciarComponentes();
     }
 
     private void iniciarComponentes() {
 
-        //==================== TITULO TABLA ====================
         lblLista = new JLabel("PARTIDOS REGISTRADOS");
         lblLista.setBounds(40, 340, 350, 30);
         lblLista.setForeground(DORADO);
         lblLista.setFont(new Font("Arial", Font.BOLD, 22));
         add(lblLista);
 
-        //==================== TABLA ====================
-        modeloTabla = new javax.swing.table.DefaultTableModel();
+        modeloTabla = new DefaultTableModel();
         modeloTabla.addColumn("Código");
         modeloTabla.addColumn("Fecha");
         modeloTabla.addColumn("Hora");
@@ -62,7 +79,8 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         tablaPartidos = new JTable(modeloTabla);
         tablaPartidos.setRowHeight(28);
         tablaPartidos.setFont(new Font("Arial", Font.PLAIN, 15));
-        tablaPartidos.getTableHeader().setFont(new Font("Arial", Font.BOLD, 15));
+        tablaPartidos.getTableHeader()
+                .setFont(new Font("Arial", Font.BOLD, 15));
         tablaPartidos.getTableHeader().setBackground(AZUL_PANEL);
         tablaPartidos.getTableHeader().setForeground(Color.WHITE);
 
@@ -70,14 +88,12 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         scrollTabla.setBounds(40, 380, 1000, 250);
         add(scrollTabla);
 
-        //==================== TITULO ====================
         lblTitulo = new JLabel("⚽ REGISTRO DE PARTIDOS");
         lblTitulo.setBounds(320, 20, 500, 40);
         lblTitulo.setForeground(DORADO);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));
         add(lblTitulo);
 
-        //==================== FORMULARIO ====================
         panelFormulario = new JPanel();
         panelFormulario.setLayout(null);
         panelFormulario.setBounds(40, 90, 1000, 240);
@@ -102,10 +118,11 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         lblFecha.setFont(new Font("Arial", Font.BOLD, 16));
         panelFormulario.add(lblFecha);
 
-        txtFecha = new JTextField();
-        txtFecha.setBounds(220, 53, 200, 30);
-        txtFecha.setFont(new Font("Arial", Font.PLAIN, 15));
-        panelFormulario.add(txtFecha);
+        dateChooserFecha = new JDateChooser();
+        dateChooserFecha.setBounds(220, 53, 200, 30);
+        dateChooserFecha.setDateFormatString("yyyy-MM-dd");
+        dateChooserFecha.setFont(new Font("Arial", Font.PLAIN, 15));
+        panelFormulario.add(dateChooserFecha);
 
         lblHora = new JLabel("Hora:");
         lblHora.setBounds(30, 90, 180, 25);
@@ -113,10 +130,22 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         lblHora.setFont(new Font("Arial", Font.BOLD, 16));
         panelFormulario.add(lblHora);
 
-        txtHora = new JTextField();
-        txtHora.setBounds(220, 88, 200, 30);
-        txtHora.setFont(new Font("Arial", Font.PLAIN, 15));
-        panelFormulario.add(txtHora);
+        SpinnerDateModel modeloHora = new SpinnerDateModel(
+                new Date(),
+                null,
+                null,
+                Calendar.MINUTE
+        );
+
+        spnHora = new JSpinner(modeloHora);
+        spnHora.setBounds(220, 88, 200, 30);
+        spnHora.setFont(new Font("Arial", Font.PLAIN, 15));
+
+        JSpinner.DateEditor editorHora =
+                new JSpinner.DateEditor(spnHora, "HH:mm:ss");
+
+        spnHora.setEditor(editorHora);
+        panelFormulario.add(spnHora);
 
         lblEquipoA = new JLabel("Equipo A:");
         lblEquipoA.setBounds(30, 130, 180, 25);
@@ -138,7 +167,6 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         cmbEquipoB.setBounds(220, 163, 400, 30);
         panelFormulario.add(cmbEquipoB);
 
-        //==================== BOTONES ====================
         panelBotones = new JPanel();
         panelBotones.setLayout(new GridLayout(1, 3, 15, 0));
         panelBotones.setOpaque(false);
@@ -164,15 +192,43 @@ public class VistaRegistroPartido extends JPanel {   // <-- ya no extiende JFram
         panelBotones.add(btnVolver);
     }
 
-    //==================== GETTERS ====================
-    public JTextField getTxtCodigo() { return txtCodigo; }
-    public JTextField getTxtFecha() { return txtFecha; }
-    public JTextField getTxtHora() { return txtHora; }
-    public JComboBox<String> getCmbEquipoA() { return cmbEquipoA; }
-    public JComboBox<String> getCmbEquipoB() { return cmbEquipoB; }
-    public JButton getBtnGuardar() { return btnGuardar; }
-    public JButton getBtnLimpiar() { return btnLimpiar; }
-    public JButton getBtnVolver() { return btnVolver; }
-    public JTable getTablaPartidos() { return tablaPartidos; }
-    public javax.swing.table.DefaultTableModel getModeloTabla() { return modeloTabla; }
+    public JTextField getTxtCodigo() {
+        return txtCodigo;
+    }
+
+    public JDateChooser getDateChooserFecha() {
+        return dateChooserFecha;
+    }
+
+    public JSpinner getSpnHora() {
+        return spnHora;
+    }
+
+    public JComboBox<String> getCmbEquipoA() {
+        return cmbEquipoA;
+    }
+
+    public JComboBox<String> getCmbEquipoB() {
+        return cmbEquipoB;
+    }
+
+    public JButton getBtnGuardar() {
+        return btnGuardar;
+    }
+
+    public JButton getBtnLimpiar() {
+        return btnLimpiar;
+    }
+
+    public JButton getBtnVolver() {
+        return btnVolver;
+    }
+
+    public JTable getTablaPartidos() {
+        return tablaPartidos;
+    }
+
+    public DefaultTableModel getModeloTabla() {
+        return modeloTabla;
+    }
 }

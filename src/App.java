@@ -1,13 +1,20 @@
+import Controlador.PartidoControlador;
 import DAO.Conexion;
 import Vista.VistaPrincipal;
 
 public class App {
     public static void main(String[] args) throws Exception {
-           VistaPrincipal vista = new VistaPrincipal();
-           Conexion conexion = new Conexion();
+      
+       System.out.println("Iniciando aplicación...");
+
+        VistaPrincipal vista = new VistaPrincipal();
+        System.out.println("VistaPrincipal creada.");
+
+        new PartidoControlador(vista);
+        System.out.println("Controlador creado.");
 
         vista.setVisible(true);
-        Conexion.conectar(); // Llamada al método conectar() para establecer la conexión
-
+        System.out.println("Ventana visible.");
+           
     }
 }

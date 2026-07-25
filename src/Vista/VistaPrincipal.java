@@ -36,7 +36,7 @@ public class VistaPrincipal extends JFrame {
     public VistaPrincipal() {
 
         setTitle("Sistema de Pronósticos Mundial 2026");
-        setSize(1050, 650);
+        setSize(1050, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -59,7 +59,7 @@ public class VistaPrincipal extends JFrame {
         //================ CONTENEDOR PRINCIPAL (CardLayout) ======================
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);
-        panelContenedor.setBounds(0, 90, 1050, 550);
+        panelContenedor.setBounds(0, 90, 1050, 650);
         add(panelContenedor);
 
         // ---- Tarjeta HOME (menu + imagen) ----

@@ -1,7 +1,11 @@
 {
-    "java.project.sourcePaths": ["src"],
+    "java.project.sourcePaths": [
+        "src"
+    ],
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
-        "lib/**/*.jar"
+        "c:\\Users\\Intel\\Desktop\\BD-MundialFIFA2026\\BD-MundialFIFA2026\\jcalendar\\jcalendar-1.4.jar",
+        "c:\\Users\\Intel\\Desktop\\ProyectoAplicadaMundial\\lib\\mysql-connector-j-9.0.0.jar",
+        "c:\\Users\\Intel\\Desktop\\ProyectoAplicadaMundial\\lib\\jcalendar-0.8.1.jar"
     ]
 }

@@ -5,8 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Conexion {
-    // Aquí puedes agregar la lógica de conexión a la base de datos si es necesario
-     private static Connection con;
+    private static Connection con;
     private static Statement sentencia;
 
     public static Connection conectar() {
@@ -35,5 +34,4 @@ public class Conexion {
         }
         return sentencia;
     }
-    
 }
