@@ -1,14 +1,16 @@
 package Controlador;
 
+import DAO.PronosticoDAO;
 
 public class PruebaArduino {
 
-    public static void main(String[] args) {
+    public void iniciar() {
 
         ConexionArduino arduino = new ConexionArduino();
+        PronosticoDAO pronosticoDAO = new PronosticoDAO();
 
         if (!arduino.conectar()) {
-            System.out.println("No se pudo iniciar la prueba");
+            System.out.println("No se pudo iniciar Arduino");
             return;
         }
 
@@ -16,29 +18,26 @@ public class PruebaArduino {
 
         while (true) {
 
+            String mensaje = arduino.leerLinea();
+
+            if (mensaje != null && !mensaje.trim().isEmpty()) {
+
+                mensaje = mensaje.trim();
+
+                System.out.println("Arduino envió: " + mensaje);
+
+                String respuesta =
+                        procesarPronostico(mensaje, pronosticoDAO);
+
+                arduino.enviarRespuesta(respuesta);
+
+                System.out.println(
+                        "Respuesta enviada: " + respuesta
+                );
+            }
+
             try {
-                String mensaje = arduino.leerLinea();
-
-                if (mensaje != null && !mensaje.trim().isEmpty()) {
-
-                    mensaje = mensaje.trim();
-
-                    System.out.println(
-                            "Arduino envio: " + mensaje
-                    );
-
-                    if (mensaje.startsWith("PRONOSTICO,")) {
-
-                        arduino.enviarRespuesta("OK");
-
-                        System.out.println(
-                                "Se respondio OK al Arduino"
-                        );
-                    }
-                }
-
                 Thread.sleep(100);
-
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
@@ -46,5 +45,34 @@ public class PruebaArduino {
         }
 
         arduino.desconectar();
+    }
+
+    private String procesarPronostico(
+            String mensaje,
+            PronosticoDAO pronosticoDAO
+    ) {
+
+        String[] datos = mensaje.split(",");
+
+        if (datos.length != 5) {
+            return "ERROR";
+        }
+
+        if (!datos[0].equals("PRONOSTICO")) {
+            return "ERROR";
+        }
+
+        try {
+
+            return pronosticoDAO.registrarPronostico(
+                    datos[1],
+                    datos[2],
+                    Integer.parseInt(datos[3]),
+                    Integer.parseInt(datos[4])
+            );
+
+        } catch (NumberFormatException e) {
+            return "ERROR";
+        }
     }
 }

@@ -1,101 +1,249 @@
 package DAO;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import Modelo.Pronostico;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PronosticoDAO {
-    private Connection con;
 
-    public boolean agregarPronostico(Pronostico p) {
-        con = Conexion.conectar();
+    public String registrarPronostico(
+            String codigoUsuario,
+            String codigoPartido,
+            int golesEquipoA,
+            int golesEquipoB
+    ) {
+
+        Connection conexion = null;
 
         try {
-            PreparedStatement sentencia = con.prepareStatement(
-                    "INSERT INTO Pronostico (golesEquipoA, golesEquipoB, idUsuario, idPartido) "
-                  + "VALUES (?,?,?,?)");
-            sentencia.setInt(1, p.getGolesEquipoA());
-            sentencia.setInt(2, p.getGolesEquipoB());
-            sentencia.setInt(3, p.getIdUsuario());
-            sentencia.setInt(4, p.getIdPartido());
-            sentencia.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            Logger.getLogger(PronosticoDAO.class.getName()).log(Level.SEVERE, null, ex);
+            conexion = Conexion.getConexion();
+
+            if (conexion == null) {
+                System.out.println("No existe conexión con MySQL");
+                return "ERROR";
+            }
+
+            Integer idUsuario = buscarUsuario(
+                    conexion,
+                    codigoUsuario
+            );
+
+            if (idUsuario == null) {
+                System.out.println(
+                        "Usuario no encontrado: " + codigoUsuario
+                );
+
+                return "USUARIO_INVALIDO";
+            }
+
+            int idPartido;
+
+            try {
+                idPartido = Integer.parseInt(codigoPartido);
+
+            } catch (NumberFormatException e) {
+                return "PARTIDO_INVALIDO";
+            }
+
+            if (!existePartido(conexion, idPartido)) {
+                System.out.println(
+                        "Partido no encontrado: " + codigoPartido
+                );
+
+                return "PARTIDO_INVALIDO";
+            }
+
+            if (existePronostico(
+                    conexion,
+                    idUsuario,
+                    idPartido
+            )) {
+                System.out.println(
+                        "El usuario ya registró este pronóstico"
+                );
+
+                return "DUPLICADO";
+            }
+
+            String sql = """
+                    INSERT INTO Pronostico
+                    (
+                        golesEquipoA,
+                        golesEquipoB,
+                        idUsuario,
+                        idPartido
+                    )
+                    VALUES (?, ?, ?, ?)
+                    """;
+
+            PreparedStatement sentencia =
+                    conexion.prepareStatement(sql);
+
+            sentencia.setInt(1, golesEquipoA);
+            sentencia.setInt(2, golesEquipoB);
+            sentencia.setInt(3, idUsuario);
+            sentencia.setInt(4, idPartido);
+
+            int filasInsertadas = sentencia.executeUpdate();
+
+            sentencia.close();
+
+            if (filasInsertadas > 0) {
+                System.out.println(
+                        "Pronóstico registrado correctamente"
+                );
+
+                return "OK";
+            }
+
+            return "ERROR";
+
+        } catch (SQLException e) {
+
+            if (e.getErrorCode() == 1062) {
+                System.out.println(
+                        "Pronóstico duplicado: " + e.getMessage()
+                );
+
+                return "DUPLICADO";
+            }
+
+            System.out.println(
+                    "Error al registrar pronóstico: "
+                    + e.getMessage()
+            );
+
+            return "ERROR";
+
+        } catch (Exception e) {
+            System.out.println(
+                    "Error general: " + e.getMessage()
+            );
+
+            return "ERROR";
+
+        } finally {
+            try {
+                if (conexion != null) {
+                    conexion.close();
+                }
+            } catch (SQLException e) {
+                System.out.println(
+                        "Error al cerrar la conexión: "
+                        + e.getMessage()
+                );
+            }
         }
-        return false;
     }
 
-    public boolean existePronosticoParaPartido(int idPartido) {
-        con = Conexion.conectar();
-        boolean existe = false;
+    private Integer buscarUsuario(
+            Connection conexion,
+            String codigoUsuario
+    ) throws SQLException {
 
-        try {
-            PreparedStatement sentencia = con.prepareStatement(
-                    "SELECT COUNT(*) AS total FROM Pronostico WHERE idPartido = ?");
-            sentencia.setInt(1, idPartido);
-            ResultSet listado = sentencia.executeQuery();
+        String sql = """
+                SELECT idUsuario
+                FROM Usuario
+                WHERE codigo = ?
+                """;
 
-            if (listado.next()) {
-                existe = listado.getInt("total") > 0;
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PronosticoDAO.class.getName()).log(Level.SEVERE, null, ex);
+        PreparedStatement sentencia =
+                conexion.prepareStatement(sql);
+
+        sentencia.setString(1, codigoUsuario);
+
+        ResultSet resultado = sentencia.executeQuery();
+
+        Integer idUsuario = null;
+
+        if (resultado.next()) {
+            idUsuario = resultado.getInt("idUsuario");
         }
+
+        resultado.close();
+        sentencia.close();
+
+        return idUsuario;
+    }
+
+    private boolean existePartido(
+            Connection conexion,
+            int idPartido
+    ) throws SQLException {
+
+        String sql = """
+                SELECT idPartido
+                FROM Partido
+                WHERE idPartido = ?
+                """;
+
+        PreparedStatement sentencia =
+                conexion.prepareStatement(sql);
+
+        sentencia.setInt(1, idPartido);
+
+        ResultSet resultado = sentencia.executeQuery();
+
+        boolean existe = resultado.next();
+
+        resultado.close();
+        sentencia.close();
+
         return existe;
     }
 
-    public ArrayList<String> contarPronosticosPorUsuario() {
-        con = Conexion.conectar();
-        Statement sentencia = Conexion.obtenerSentencia();
-        ArrayList<String> datos = new ArrayList<>();
+    private boolean existePronostico(
+            Connection conexion,
+            int idUsuario,
+            int idPartido
+    ) throws SQLException {
 
-        try {
-            ResultSet listado = sentencia.executeQuery(
-                    "SELECT u.nombre, COUNT(pr.idPronostico) AS total\n"
-                  + "FROM Usuario u\n"
-                  + "LEFT JOIN Pronostico pr ON u.idUsuario = pr.idUsuario\n"
-                  + "GROUP BY u.idUsuario, u.nombre;");
+        String sql = """
+                SELECT idPronostico
+                FROM Pronostico
+                WHERE idUsuario = ?
+                AND idPartido = ?
+                """;
 
-            while (listado.next()) {
-                datos.add(listado.getString("nombre") + "," + listado.getString("total"));
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PronosticoDAO.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return datos;
+        PreparedStatement sentencia =
+                conexion.prepareStatement(sql);
+
+        sentencia.setInt(1, idUsuario);
+        sentencia.setInt(2, idPartido);
+
+        ResultSet resultado = sentencia.executeQuery();
+
+        boolean existe = resultado.next();
+
+        resultado.close();
+        sentencia.close();
+
+        return existe;
     }
 
-    public ArrayList<String> listarConAciertos() {
-        con = Conexion.conectar();
-        Statement sentencia = Conexion.obtenerSentencia();
-        ArrayList<String> datos = new ArrayList<>();
 
-        try {
-            ResultSet listado = sentencia.executeQuery(
-                    "SELECT u.nombre, pr.idPartido, pr.golesEquipoA, pr.golesEquipoB,\n"
-                  + "pa.golesEquipoA AS realA, pa.golesEquipoB AS realB\n"
-                  + "FROM Pronostico pr\n"
-                  + "INNER JOIN Usuario u ON pr.idUsuario = u.idUsuario\n"
-                  + "INNER JOIN Partido pa ON pr.idPartido = pa.idPartido\n"
-                  + "WHERE pa.golesEquipoA IS NOT NULL AND pa.golesEquipoB IS NOT NULL;");
+    public boolean existePronosticoParaPartido(int idPartido) {
 
-            while (listado.next()) {
-                String nombre = listado.getString("nombre");
-                int idPartido = listado.getInt("idPartido");
-                int golesA = listado.getInt("golesEquipoA");
-                int golesB = listado.getInt("golesEquipoB");
-                int realA = listado.getInt("realA");
-                int realB = listado.getInt("realB");
+    String sql = "SELECT COUNT(*) FROM Pronostico WHERE idPartido = ?";
 
-                String acierto = (golesA == realA && golesB == realB) ? "Acierto" : "Fallo";
-                datos.add(nombre + "," + idPartido + "," + golesA + "," + golesB + "," + acierto);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PronosticoDAO.class.getName()).log(Level.SEVERE, null, ex);
+    try {
+
+        Connection conexion = Conexion.getConexion();
+        PreparedStatement ps = conexion.prepareStatement(sql);
+
+        ps.setInt(1, idPartido);
+
+        ResultSet rs = ps.executeQuery();
+
+        if (rs.next()) {
+            return rs.getInt(1) > 0;
         }
-        return datos;
+
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+
+    return false;
+}
 }

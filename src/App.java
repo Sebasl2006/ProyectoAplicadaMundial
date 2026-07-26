@@ -1,4 +1,5 @@
 import Controlador.PartidoControlador;
+import Controlador.PruebaArduino;
 import DAO.Conexion;
 import Vista.VistaPrincipal;
 
@@ -15,6 +16,10 @@ public class App {
 
         vista.setVisible(true);
         System.out.println("Ventana visible.");
+
+         new Thread(() -> {
+            new PruebaArduino().iniciar();
+        }).start();
            
     }
 }
