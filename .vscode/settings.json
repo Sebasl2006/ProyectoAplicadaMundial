@@ -4,8 +4,16 @@
     ],
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
-        "c:\\Users\\Intel\\Downloads\\jSerialComm-2.11.4.jar",
+        "c:\\Users\\Intel\\Downloads\\log4j-api-2.20.0.jar",
+        "c:\\Users\\Intel\\Downloads\\commons-compress-1.26.0.jar",
+        "c:\\Users\\Intel\\Downloads\\commons-io-2.15.1.jar",
+        "c:\\Users\\Intel\\Downloads\\commons-collections4-4.4.jar",
+        "c:\\Users\\Intel\\Downloads\\xmlbeans-5.2.0.jar",
+        "c:\\Users\\Intel\\Downloads\\poi-ooxml-lite-5.2.5.jar",
+        "c:\\Users\\Intel\\Downloads\\poi-ooxml-5.2.5.jar",
+        "c:\\Users\\Intel\\Downloads\\poi-5.2.5.jar",
         "c:\\Users\\Intel\\Desktop\\ProyectoAplicadaMundial\\lib\\mysql-connector-j-9.0.0.jar",
+        "c:\\Users\\Intel\\Downloads\\jSerialComm-2.11.4.jar",
         "c:\\Users\\Intel\\Desktop\\ProyectoAplicadaMundial\\lib\\jcalendar-0.8.1.jar",
         "c:\\Users\\Intel\\Desktop\\BD-MundialFIFA2026\\BD-MundialFIFA2026\\jcalendar\\jcalendar-1.4.jar"
     ]

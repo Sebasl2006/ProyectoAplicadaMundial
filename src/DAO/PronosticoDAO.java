@@ -4,6 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.swing.table.DefaultTableModel;
 
 public class PronosticoDAO {
 
@@ -117,23 +121,12 @@ public class PronosticoDAO {
             return "ERROR";
 
         } catch (Exception e) {
+
             System.out.println(
                     "Error general: " + e.getMessage()
             );
 
             return "ERROR";
-
-        } finally {
-            try {
-                if (conexion != null) {
-                    conexion.close();
-                }
-            } catch (SQLException e) {
-                System.out.println(
-                        "Error al cerrar la conexión: "
-                        + e.getMessage()
-                );
-            }
         }
     }
 
@@ -225,25 +218,187 @@ public class PronosticoDAO {
 
     public boolean existePronosticoParaPartido(int idPartido) {
 
-    String sql = "SELECT COUNT(*) FROM Pronostico WHERE idPartido = ?";
+        String sql = "SELECT COUNT(*) FROM Pronostico WHERE idPartido = ?";
 
-    try {
+        try {
 
-        Connection conexion = Conexion.getConexion();
-        PreparedStatement ps = conexion.prepareStatement(sql);
+            Connection conexion = Conexion.getConexion();
+            PreparedStatement ps = conexion.prepareStatement(sql);
 
-        ps.setInt(1, idPartido);
+            ps.setInt(1, idPartido);
 
-        ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
 
-        if (rs.next()) {
-            return rs.getInt(1) > 0;
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return false;
     }
 
-    return false;
-}
+
+    public Map<String, Integer> cantidadPronosticosPorUsuario() {
+        Map<String, Integer> datos = new LinkedHashMap<>();
+
+        String sql = """
+                SELECT u.nombre,
+                    COUNT(p.idPronostico) AS cantidad
+                FROM Usuario u
+                LEFT JOIN Pronostico p
+                    ON u.idUsuario = p.idUsuario
+                GROUP BY u.idUsuario, u.nombre
+                ORDER BY cantidad DESC
+                """;
+        try {
+            Connection conexion = Conexion.getConexion();
+            PreparedStatement ps =
+                    conexion.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                datos.put(
+                        rs.getString("nombre"),
+                        rs.getInt("cantidad")
+                );
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error al consultar pronósticos: "
+                    + e.getMessage()
+            );
+        }
+        return datos;
+    }
+
+    public Map<String, Integer> cantidadPronosticosPorFecha(
+            String fechaDesde,
+            String fechaHasta
+    ) {
+        Map<String, Integer> datos = new LinkedHashMap<>();
+        String sql = """
+                SELECT u.nombre,
+                    COUNT(p.idPronostico) AS cantidad
+                FROM Usuario u
+                LEFT JOIN Pronostico p
+                    ON u.idUsuario = p.idUsuario
+                    AND DATE(p.fechaRegistro)
+                    BETWEEN ? AND ?
+                GROUP BY u.idUsuario, u.nombre
+                ORDER BY cantidad DESC
+                """;
+        try {
+            Connection conexion = Conexion.getConexion();
+            PreparedStatement ps =
+                    conexion.prepareStatement(sql);
+            ps.setString(1, fechaDesde);
+            ps.setString(2, fechaHasta);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                datos.put(
+                        rs.getString("nombre"),
+                        rs.getInt("cantidad")
+                );
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error al consultar pronósticos: "
+                    + e.getMessage()
+            );
+        }
+        return datos;
+    }
+    public DefaultTableModel obtenerRankingAciertos() {
+        String[] columnas = {
+            "Posición",
+            "Usuario",
+            "Pronósticos",
+            "Aciertos",
+            "Fallos"
+        };
+        DefaultTableModel modelo =
+                new DefaultTableModel(columnas, 0) {
+                    @Override
+                    public boolean isCellEditable(
+                            int fila,
+                            int columna
+                    ) {
+                        return false;
+                    }
+                };
+        String sql = """
+                SELECT
+                    u.nombre,
+                    COUNT(p.idPronostico) AS totalPronosticos,
+                    SUM(
+                        CASE
+                            WHEN pa.golesEquipoA IS NOT NULL
+                            AND pa.golesEquipoB IS NOT NULL
+                            AND p.golesEquipoA = pa.golesEquipoA
+                            AND p.golesEquipoB = pa.golesEquipoB
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) AS aciertos,
+
+                    SUM(
+                        CASE
+                            WHEN pa.golesEquipoA IS NOT NULL
+                            AND pa.golesEquipoB IS NOT NULL
+                            AND (
+                                p.golesEquipoA <> pa.golesEquipoA
+                                OR p.golesEquipoB <> pa.golesEquipoB
+                            )
+                            THEN 1
+                            ELSE 0
+                        END
+                    ) AS fallos
+
+                FROM Usuario u
+
+                LEFT JOIN Pronostico p
+                    ON u.idUsuario = p.idUsuario
+
+                LEFT JOIN Partido pa
+                    ON p.idPartido = pa.idPartido
+
+                GROUP BY u.idUsuario, u.nombre
+
+                ORDER BY aciertos DESC,
+                        totalPronosticos DESC,
+                        u.nombre ASC
+                """;
+
+        try {
+            Connection conexion = Conexion.getConexion();
+            PreparedStatement ps =
+                    conexion.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            int posicion = 1;
+            while (rs.next()) {
+                modelo.addRow(new Object[]{
+                    posicion,
+                    rs.getString("nombre"),
+                    rs.getInt("totalPronosticos"),
+                    rs.getInt("aciertos"),
+                    rs.getInt("fallos")
+                });
+                posicion++;
+            }
+            rs.close();
+            ps.close();
+        } catch (SQLException e) {
+            System.out.println(
+                    "Error al obtener ranking: "
+                    + e.getMessage()
+            );
+        }
+        return modelo;
+    }
 }

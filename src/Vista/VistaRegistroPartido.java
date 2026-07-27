@@ -88,7 +88,7 @@ public class VistaRegistroPartido extends JPanel {
         scrollTabla.setBounds(40, 380, 1000, 250);
         add(scrollTabla);
 
-        lblTitulo = new JLabel("⚽ REGISTRO DE PARTIDOS");
+        lblTitulo = new JLabel(" REGISTRO DE PARTIDOS");
         lblTitulo.setBounds(320, 20, 500, 40);
         lblTitulo.setForeground(DORADO);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));

@@ -33,6 +33,9 @@ public class VistaPrincipal extends JFrame {
     private VistaModificarPartido vistaModificar;
     private VistaRegistroResultados vistaResultados;
 
+    private VistaPronosticosUsuario vistaPronosticosUsuario;
+    private VistaRankingAciertos vistaRankingAciertos;
+
     public VistaPrincipal() {
 
         setTitle("Sistema de Pronósticos Mundial 2026");
@@ -49,14 +52,14 @@ public class VistaPrincipal extends JFrame {
         getContentPane().setBackground(fondo);
         setLayout(null);
 
-        //================== TITULO ==================
-        lblTitulo = new JLabel("🏆 SISTEMA DE PRONÓSTICOS - MUNDIAL 2026");
+        // ================== TITULO ==================
+        lblTitulo = new JLabel(" SISTEMA DE PRONÓSTICOS - MUNDIAL 2026");
         lblTitulo.setBounds(180, 20, 700, 40);
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 28));
         lblTitulo.setForeground(dorado);
         add(lblTitulo);
 
-        //================ CONTENEDOR PRINCIPAL (CardLayout) ======================
+        // ================ CONTENEDOR PRINCIPAL (CardLayout) ======================
         cardLayout = new CardLayout();
         panelContenedor = new JPanel(cardLayout);
         panelContenedor.setBounds(0, 90, 1050, 650);
@@ -80,8 +83,8 @@ public class VistaPrincipal extends JFrame {
         lblMenu.setFont(new Font("Arial", Font.BOLD, 22));
         panelMenu.add(lblMenu);
 
-        //================== PARTIDOS =================
-        JLabel lblPartidos = new JLabel("⚽ PARTIDOS");
+        // ================== PARTIDOS =================
+        JLabel lblPartidos = new JLabel(" PARTIDOS");
         lblPartidos.setBounds(25, 80, 200, 25);
         lblPartidos.setForeground(Color.WHITE);
         lblPartidos.setFont(new Font("Arial", Font.BOLD, 18));
@@ -110,8 +113,8 @@ public class VistaPrincipal extends JFrame {
             }
         });
 
-        //================== REPORTES =================
-        JLabel lblReportes = new JLabel("📊 REPORTES");
+        // ================== REPORTES =================
+        JLabel lblReportes = new JLabel(" REPORTES");
         lblReportes.setBounds(25, 220, 200, 25);
         lblReportes.setForeground(Color.WHITE);
         lblReportes.setFont(new Font("Arial", Font.BOLD, 18));
@@ -127,7 +130,18 @@ public class VistaPrincipal extends JFrame {
         cmbReportes.setFont(new Font("Arial", Font.BOLD, 15));
         panelMenu.add(cmbReportes);
 
-        //================= PANEL IMAGEN =================
+        cmbReportes.addActionListener(e -> {
+
+            String opcion = (String) cmbReportes.getSelectedItem();
+
+            if ("Pronósticos por Usuario".equals(opcion)) {
+                cardLayout.show(panelContenedor, "PRONOSTICOS_USUARIO");
+            } else if ("Ranking de Aciertos".equals(opcion)) {
+                cardLayout.show(panelContenedor, "RANKING_ACIERTOS");
+            }
+        });
+
+        // ================= PANEL IMAGEN =================
         panelImagen = new JPanel();
         panelImagen.setLayout(new BorderLayout());
         panelImagen.setBounds(320, 0, 690, 500);
@@ -144,18 +158,12 @@ public class VistaPrincipal extends JFrame {
 
         // ---- Tarjeta REGISTRO ----
         vistaRegistro = new VistaRegistroPartido();
-        vistaRegistro.getBtnVolver().addActionListener(e ->
-            cardLayout.show(panelContenedor, "HOME")
-        );
+        vistaRegistro.getBtnVolver().addActionListener(e -> cardLayout.show(panelContenedor, "HOME"));
 
         // ---- Tarjeta MODIFICAR ----
         vistaModificar = new VistaModificarPartido();
-        vistaModificar.getBtnCancelar().addActionListener(e ->
-            cardLayout.show(panelContenedor, "HOME")
-        );
-        vistaModificar.getBtnVolver().addActionListener(e ->     
-         cardLayout.show(panelContenedor, "HOME")
-        );  
+        vistaModificar.getBtnCancelar().addActionListener(e -> cardLayout.show(panelContenedor, "HOME"));
+        vistaModificar.getBtnVolver().addActionListener(e -> cardLayout.show(panelContenedor, "HOME"));
 
         JScrollPane scrollModificar = new JScrollPane(vistaModificar);
         scrollModificar.setBorder(null);
@@ -165,30 +173,77 @@ public class VistaPrincipal extends JFrame {
 
         // ---- Tarjeta RESULTADOS ----
         vistaResultados = new VistaRegistroResultados();
-        vistaResultados.getBtnCancelar().addActionListener(e ->
-            cardLayout.show(panelContenedor, "HOME")
-        );
+        vistaResultados.getBtnCancelar().addActionListener(e -> cardLayout.show(panelContenedor, "HOME"));
 
         JScrollPane scrollResultados = new JScrollPane(vistaResultados);
+
         scrollResultados.setBorder(null);
         scrollResultados.getVerticalScrollBar().setUnitIncrement(16);
         scrollResultados.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollResultados.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 
+        vistaPronosticosUsuario = new VistaPronosticosUsuario();
+        vistaPronosticosUsuario.getBtnVolver().addActionListener(e -> {
+            cardLayout.show(panelContenedor, "HOME");
+            cmbReportes.setSelectedIndex(0);
+        });
+
+        JScrollPane scrollPronosticos = new JScrollPane(vistaPronosticosUsuario);
+        scrollPronosticos.setBorder(null);
+        scrollPronosticos.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPronosticos.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPronosticos.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+        vistaRankingAciertos = new VistaRankingAciertos();
+        vistaRankingAciertos.getBtnVolver().addActionListener(e -> {
+            cardLayout.show(panelContenedor, "HOME");
+            cmbReportes.setSelectedIndex(0);
+        });
+
+        JScrollPane scrollRanking = new JScrollPane(vistaRankingAciertos);
+        scrollRanking.setBorder(null);
+        scrollRanking.getVerticalScrollBar().setUnitIncrement(16);
+        scrollRanking.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollRanking.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         // Agregamos TODAS las tarjetas al contenedor
         panelContenedor.add(panelHome, "HOME");
         panelContenedor.add(vistaRegistro, "REGISTRO");
-        panelContenedor.add(scrollModificar, "MODIFICAR");     // <-- esto era lo que faltaba
+        panelContenedor.add(scrollModificar, "MODIFICAR");
+        panelContenedor.add(scrollRanking, "RANKING_ACIERTOS");
         panelContenedor.add(scrollResultados, "RESULTADOS");
+
+        panelContenedor.add(scrollPronosticos, "PRONOSTICOS_USUARIO"); // <-- esta línea faltaba
 
         // La tarjeta que se ve al iniciar
         cardLayout.show(panelContenedor, "HOME");
     }
 
-    //================ GETTERS ===================
-    public JComboBox<String> getCmbPartidos() { return cmbPartidos; }
-    public JComboBox<String> getCmbReportes() { return cmbReportes; }
-    public VistaRegistroPartido getVistaRegistro() { return vistaRegistro; }
-    public VistaModificarPartido getVistaModificar() { return vistaModificar; }
-    public VistaRegistroResultados getVistaResultados() { return vistaResultados; }
+    // ================ GETTERS ===================
+    public JComboBox<String> getCmbPartidos() {
+        return cmbPartidos;
+    }
+
+    public JComboBox<String> getCmbReportes() {
+        return cmbReportes;
+    }
+
+    public VistaRegistroPartido getVistaRegistro() {
+        return vistaRegistro;
+    }
+
+    public VistaModificarPartido getVistaModificar() {
+        return vistaModificar;
+    }
+
+    public VistaRegistroResultados getVistaResultados() {
+        return vistaResultados;
+    }
+
+    public VistaPronosticosUsuario getVistaPronosticosUsuario() {
+        return vistaPronosticosUsuario;
+    }
+
+    public VistaRankingAciertos getVistaRankingAciertos() {
+        return vistaRankingAciertos;
+    }
 }
