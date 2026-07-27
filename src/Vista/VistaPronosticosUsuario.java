@@ -14,15 +14,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
+import com.toedter.calendar.JDateChooser;
 
 public class VistaPronosticosUsuario extends JPanel {
 
-    private JTextField txtDesde;
-    private JTextField txtHasta;
     private JButton btnFiltrar;
     private JButton btnExportar;
     private JButton btnActualizar;
     private JButton btnVolver;
+    private JDateChooser dateDesde; // antes: private JTextField txtDesde;
+    private JDateChooser dateHasta; // antes: private JTextField txtHasta;
 
     private PanelGrafico panelGrafico;
 
@@ -68,22 +69,24 @@ public class VistaPronosticosUsuario extends JPanel {
         lblDesde.setFont(new Font("Arial", Font.PLAIN, 13));
         panelFiltro.add(lblDesde);
 
-        txtDesde = new JTextField();
-        txtDesde.setBounds(80, 15, 130, 28);
-        panelFiltro.add(txtDesde);
+        dateDesde = new JDateChooser();
+        dateDesde.setDateFormatString("yyyy-MM-dd");
+        dateDesde.setBounds(80, 15, 150, 28);
+        panelFiltro.add(dateDesde);
 
         JLabel lblHasta = new JLabel("Hasta:");
-        lblHasta.setBounds(230, 17, 60, 25);
+        lblHasta.setBounds(250, 17, 60, 25);
         lblHasta.setForeground(Color.WHITE);
         lblHasta.setFont(new Font("Arial", Font.PLAIN, 13));
         panelFiltro.add(lblHasta);
 
-        txtHasta = new JTextField();
-        txtHasta.setBounds(290, 15, 130, 28);
-        panelFiltro.add(txtHasta);
+        dateHasta = new JDateChooser();
+        dateHasta.setDateFormatString("yyyy-MM-dd");
+        dateHasta.setBounds(320, 15, 150, 28);
+        panelFiltro.add(dateHasta);
 
         btnFiltrar = crearBoton("Filtrar");
-        btnFiltrar.setBounds(460, 12, 150, 32);
+        btnFiltrar.setBounds(490, 12, 120, 32);
         panelFiltro.add(btnFiltrar);
     }
 
@@ -91,7 +94,7 @@ public class VistaPronosticosUsuario extends JPanel {
 
         btnExportar = crearBoton("⇩  Exportar");
         btnExportar.setBounds(680, 60, 125, 42);
-        btnExportar.setBackground(new Color(0, 168, 107)); 
+        btnExportar.setBackground(new Color(0, 168, 107));
         add(btnExportar);
 
         btnActualizar = crearBoton("Actualizar");
@@ -130,13 +133,12 @@ public class VistaPronosticosUsuario extends JPanel {
     }
 
     // ==================== GETTERS ====================
-
-    public JTextField getTxtDesde() {
-        return txtDesde;
+    public JDateChooser getDateDesde() {
+        return dateDesde;
     }
 
-    public JTextField getTxtHasta() {
-        return txtHasta;
+    public JDateChooser getDateHasta() {
+        return dateHasta;
     }
 
     public JButton getBtnFiltrar() {
@@ -151,8 +153,9 @@ public class VistaPronosticosUsuario extends JPanel {
         return btnActualizar;
     }
 
-    public JButton getBtnVolver() { 
-        return btnVolver; }
+    public JButton getBtnVolver() {
+        return btnVolver;
+    }
 
     // Se llama desde el controlador para pintar el gráfico con datos reales
     public void setDatos(List<String> nombres, List<Integer> cantidades) {

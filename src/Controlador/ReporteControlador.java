@@ -13,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.toedter.calendar.JDateChooser;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ReporteControlador {
 
     private final VistaPronosticosUsuario vistaPronosticos;
@@ -24,7 +28,8 @@ public class ReporteControlador {
         this.vistaRanking = vistaRanking;
         this.pronosticoDAO = new PronosticoDAO();
 
-        // ==================== EVENTOS: VISTA PRONOSTICOS POR USUARIO ====================
+        // ==================== EVENTOS: VISTA PRONOSTICOS POR USUARIO
+        // ====================
 
         vistaPronosticos.getBtnActualizar().addActionListener(e -> cargarPronosticosPorUsuario());
         vistaPronosticos.getBtnFiltrar().addActionListener(e -> filtrarPronosticosPorFecha());
@@ -42,7 +47,8 @@ public class ReporteControlador {
         cargarRankingAciertos();
     }
 
-    // ==================== GRAFICO DE BARRAS: PRONOSTICOS POR USUARIO ====================
+    // ==================== GRAFICO DE BARRAS: PRONOSTICOS POR USUARIO
+    // ====================
 
     private void cargarPronosticosPorUsuario() {
         Map<String, Integer> datos = pronosticoDAO.cantidadPronosticosPorUsuario();
@@ -50,20 +56,25 @@ public class ReporteControlador {
     }
 
     private void filtrarPronosticosPorFecha() {
-        String desde = vistaPronosticos.getTxtDesde().getText().trim();
-        String hasta = vistaPronosticos.getTxtHasta().getText().trim();
 
-        if (desde.isEmpty() || hasta.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Ingresa ambas fechas (formato: YYYY-MM-DD).");
+        Date desde = vistaPronosticos.getDateDesde().getDate();
+        Date hasta = vistaPronosticos.getDateHasta().getDate();
+
+        if (desde == null || hasta == null) {
+            JOptionPane.showMessageDialog(null, "Selecciona ambas fechas en el calendario.");
             return;
         }
 
-        if (!desde.matches("\\d{4}-\\d{2}-\\d{2}") || !hasta.matches("\\d{4}-\\d{2}-\\d{2}")) {
-            JOptionPane.showMessageDialog(null, "Formato de fecha inválido. Usa YYYY-MM-DD (ej. 2026-06-11).");
+        if (desde.after(hasta)) {
+            JOptionPane.showMessageDialog(null, "La fecha 'Desde' no puede ser posterior a 'Hasta'.");
             return;
         }
 
-        Map<String, Integer> datos = pronosticoDAO.cantidadPronosticosPorFecha(desde, hasta);
+        SimpleDateFormat formato = new SimpleDateFormat("yyyy-MM-dd");
+        String fechaDesde = formato.format(desde);
+        String fechaHasta = formato.format(hasta);
+
+        Map<String, Integer> datos = pronosticoDAO.cantidadPronosticosPorFecha(fechaDesde, fechaHasta);
 
         if (datos.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No hay pronósticos registrados en ese rango de fechas.");
